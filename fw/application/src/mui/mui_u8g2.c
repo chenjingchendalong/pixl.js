@@ -80,6 +80,8 @@
 
 #include "boards.h"
 
+#define PIXLJS_DEFAULT_DISPLAY_ROTATION U8G2_R2
+
 u8g2_t u8g2;
 static spi_device_t m_dev;
 uint8_t m_u8g2_initialized = 0;
@@ -192,7 +194,8 @@ void mui_u8g2_init(u8g2_t *p_u8g2) {
     nrf_gpio_cfg_output(LCD_BL_PIN);
     nrf_gpio_pin_clear(LCD_BL_PIN);
 
-    u8g2_Setup_st7567_enh_dg128064_f(p_u8g2, U8G2_R0, u8x8_HW_com_spi_nrf52832, u8g2_nrf_gpio_and_delay_spi_cb);
+    u8g2_Setup_st7567_enh_dg128064_f(p_u8g2, PIXLJS_DEFAULT_DISPLAY_ROTATION, u8x8_HW_com_spi_nrf52832,
+                                    u8g2_nrf_gpio_and_delay_spi_cb);
 
     u8g2_InitDisplay(p_u8g2);
 
@@ -205,7 +208,8 @@ void mui_u8g2_init(u8g2_t *p_u8g2) {
 #endif
 
 #ifdef OLED_SCREEN
-    u8g2_Setup_sh1106_128x64_noname_f(p_u8g2, U8G2_R0, u8x8_HW_com_spi_nrf52832, u8g2_nrf_gpio_and_delay_spi_cb);
+    u8g2_Setup_sh1106_128x64_noname_f(p_u8g2, PIXLJS_DEFAULT_DISPLAY_ROTATION, u8x8_HW_com_spi_nrf52832,
+                                     u8g2_nrf_gpio_and_delay_spi_cb);
     u8g2_InitDisplay(p_u8g2);
 
     settings_data_t *p_settings = settings_get_data();
