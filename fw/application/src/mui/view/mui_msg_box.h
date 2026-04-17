@@ -39,5 +39,6 @@ void mui_msg_box_set_message(mui_msg_box_t *p_view, const char* message);
 void mui_msg_box_set_btn_text(mui_msg_box_t *p_view, const char* left, const char* center, const char* right);
 void mui_msg_box_set_btn_focus(mui_msg_box_t *p_view, uint8_t focus);
 void mui_msg_box_reset(mui_msg_box_t *p_view);
+bool mui_msg_box_back(mui_msg_box_t *p_view);
 
 #endif

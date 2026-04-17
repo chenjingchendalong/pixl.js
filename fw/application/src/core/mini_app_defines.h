@@ -18,6 +18,10 @@ typedef struct {
     void* arg_ptr;
 }mini_app_event_t;
 
+typedef enum {
+    MINI_APP_EVENT_BACK = 1,
+} mini_app_event_id_t;
+
 
 typedef void (* mini_app_run_cb_t)(mini_app_inst_t* p_app_inst);
 typedef void (* mini_app_kill_cb_t)(mini_app_inst_t* p_app_inst);

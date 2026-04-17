@@ -18,6 +18,38 @@ static void app_amiidb_on_run(mini_app_inst_t *p_app_inst);
 static void app_amiidb_on_kill(mini_app_inst_t *p_app_inst);
 static void app_amiidb_on_event(mini_app_inst_t *p_app_inst, mini_app_event_t *p_event);
 
+static void app_amiidb_back(app_amiidb_t *app) {
+    uint32_t current_scene = mui_scene_dispatcher_current_scene(app->p_scene_dispatcher);
+    mui_view_t *p_active_view = app->p_view_dispatcher->p_active_view;
+
+    if (p_active_view == mui_msg_box_get_view(app->p_msg_box)) {
+        if (!mui_msg_box_back(app->p_msg_box)) {
+            mui_view_dispatcher_switch_to_view(app->p_view_dispatcher, AMIIDB_VIEW_ID_LIST);
+        }
+        return;
+    }
+
+    if (p_active_view == mui_text_input_get_view(app->p_text_input)) {
+        mui_view_dispatcher_switch_to_view(app->p_view_dispatcher, AMIIDB_VIEW_ID_LIST);
+        return;
+    }
+
+    if (p_active_view == mui_list_view_get_view(app->p_list_view) && mui_list_view_back(app->p_list_view)) {
+        return;
+    }
+
+    if (p_active_view == amiibo_view_get_view(app->p_amiibo_view)) {
+        mui_scene_dispatcher_previous_scene(app->p_scene_dispatcher);
+        return;
+    }
+
+    if (current_scene == AMIIDB_SCENE_MAIN) {
+        mini_app_launcher_kill(mini_app_launcher(), MINI_APP_ID_AMIIDB);
+    } else {
+        mui_scene_dispatcher_previous_scene(app->p_scene_dispatcher);
+    }
+}
+
 static void app_amiidb_try_mount_drive(app_amiidb_t *p_app_inst) {
     vfs_driver_t *p_driver = vfs_get_driver(VFS_DRIVE_EXT);
     if (p_driver->mounted()) {
@@ -146,7 +178,16 @@ void app_amiidb_on_kill(mini_app_inst_t *p_app_inst) {
     p_app_inst->p_handle = NULL;
 }
 
-void app_amiidb_on_event(mini_app_inst_t *p_app_inst, mini_app_event_t *p_event) {}
+void app_amiidb_on_event(mini_app_inst_t *p_app_inst, mini_app_event_t *p_event) {
+    app_amiidb_t *app = p_app_inst->p_handle;
+    if (app == NULL) {
+        return;
+    }
+
+    if (p_event->id == MINI_APP_EVENT_BACK) {
+        app_amiidb_back(app);
+    }
+}
 
 const mini_app_t app_amiidb_info = {.id = MINI_APP_ID_AMIIDB,
                                     .name = "Amiibo数据库",

@@ -3,6 +3,7 @@
 
 #include "mui_include.h"
 
+#include "cwalk.h"
 #include "amiibo_detail_view.h"
 
 #include "amiibo_scene.h"
@@ -19,6 +20,51 @@
 static void app_amiibo_on_run(mini_app_inst_t *p_app_inst);
 static void app_amiibo_on_kill(mini_app_inst_t *p_app_inst);
 static void app_amiibo_on_event(mini_app_inst_t *p_app_inst, mini_app_event_t *p_event);
+
+static void app_amiibo_back(app_amiibo_t *app) {
+    uint32_t current_scene = mui_scene_dispatcher_current_scene(app->p_scene_dispatcher);
+    mui_view_t *p_active_view = app->p_view_dispatcher->p_active_view;
+
+    if (p_active_view == mui_msg_box_get_view(app->p_msg_box)) {
+        if (!mui_msg_box_back(app->p_msg_box)) {
+            mui_view_dispatcher_switch_to_view(app->p_view_dispatcher, AMIIBO_VIEW_ID_LIST);
+        }
+        return;
+    }
+
+    if (p_active_view == mui_text_input_get_view(app->p_text_input)) {
+        mui_view_dispatcher_switch_to_view(app->p_view_dispatcher, AMIIBO_VIEW_ID_LIST);
+        return;
+    }
+
+    if (p_active_view == mui_list_view_get_view(app->p_list_view) && mui_list_view_back(app->p_list_view)) {
+        return;
+    }
+
+    if (p_active_view == amiibo_detail_view_get_view(app->p_amiibo_detail_view)) {
+        mui_scene_dispatcher_previous_scene(app->p_scene_dispatcher);
+        return;
+    }
+
+    if (current_scene == AMIIBO_SCENE_FILE_BROWSER) {
+        if (string_cmp_str(app->current_folder, "/") == 0) {
+            mini_app_launcher_kill(mini_app_launcher(), MINI_APP_ID_AMIIBO);
+        } else {
+            struct cwk_segment segment;
+            const char *folder_cstr = string_get_cstr(app->current_folder);
+            cwk_path_get_last_segment(folder_cstr, &segment);
+            string_left(app->current_folder, segment.begin - folder_cstr);
+            if (string_size(app->current_folder) == 0) {
+                string_cat_str(app->current_folder, "/");
+            }
+            mui_view_dispatcher_switch_to_view(app->p_view_dispatcher, AMIIBO_VIEW_ID_LIST);
+            mui_update(mui());
+        }
+        return;
+    }
+
+    mui_scene_dispatcher_previous_scene(app->p_scene_dispatcher);
+}
 
 static void app_amiibo_try_mount_drive(app_amiibo_t *p_app_inst) {
     vfs_driver_t *p_driver = vfs_get_driver(p_app_inst->current_drive);
@@ -155,7 +201,16 @@ void app_amiibo_on_kill(mini_app_inst_t *p_app_inst) {
     p_app_inst->p_handle = NULL;
 }
 
-void app_amiibo_on_event(mini_app_inst_t *p_app_inst, mini_app_event_t *p_event) {}
+void app_amiibo_on_event(mini_app_inst_t *p_app_inst, mini_app_event_t *p_event) {
+    app_amiibo_t *app = p_app_inst->p_handle;
+    if (app == NULL) {
+        return;
+    }
+
+    if (p_event->id == MINI_APP_EVENT_BACK) {
+        app_amiibo_back(app);
+    }
+}
 
 mini_app_t app_amiibo_info = {.id = MINI_APP_ID_AMIIBO,
                               .name = "Amiibo模拟器",

@@ -45,7 +45,11 @@ void app_ble_on_kill(mini_app_inst_t *p_app_inst) {
     p_app_inst->p_handle = NULL;
 }
 
-void app_ble_on_event(mini_app_inst_t *p_app_inst, mini_app_event_t *p_event) {}
+void app_ble_on_event(mini_app_inst_t *p_app_inst, mini_app_event_t *p_event) {
+    if (p_event->id == MINI_APP_EVENT_BACK) {
+        mini_app_launcher_kill(mini_app_launcher(), MINI_APP_ID_BLE);
+    }
+}
 
 mini_app_t app_ble_info = {.id = MINI_APP_ID_BLE,
                                  .name = "蓝牙传输",

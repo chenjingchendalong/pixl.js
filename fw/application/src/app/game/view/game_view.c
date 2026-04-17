@@ -4,7 +4,7 @@
 
 #include "mui_core.h"
 
-uint8_t key_state[3] = {0};
+uint8_t key_state[4] = {0};
 uint8_t key_repeat_cnt = 0;
 
 uint8_t game_view_key_pressed(input_key_t key) { return key_state[key]; }

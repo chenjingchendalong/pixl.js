@@ -88,6 +88,29 @@ static void mui_msg_box_on_input(mui_view_t *p_view, mui_input_event_t *event) {
     }
 }
 
+bool mui_msg_box_back(mui_msg_box_t *p_view) {
+    if (p_view->event_cb == NULL) {
+        return false;
+    }
+
+    if (string_size(p_view->btn_right_text) > 0) {
+        p_view->event_cb(MUI_MSG_BOX_EVENT_SELECT_RIGHT, p_view);
+        return true;
+    }
+
+    if (string_size(p_view->btn_center_text) > 0) {
+        p_view->event_cb(MUI_MSG_BOX_EVENT_SELECT_CENTER, p_view);
+        return true;
+    }
+
+    if (string_size(p_view->btn_left_text) > 0) {
+        p_view->event_cb(MUI_MSG_BOX_EVENT_SELECT_LEFT, p_view);
+        return true;
+    }
+
+    return false;
+}
+
 static void mui_msg_box_on_enter(mui_view_t *p_view) {}
 
 static void mui_msg_box_on_exit(mui_view_t *p_view) {}

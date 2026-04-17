@@ -11,6 +11,21 @@ static void app_player_on_run(mini_app_inst_t *p_app_inst);
 static void app_player_on_kill(mini_app_inst_t *p_app_inst);
 static void app_player_on_event(mini_app_inst_t *p_app_inst, mini_app_event_t *p_event);
 
+static void app_player_back(app_player_t *app) {
+    uint32_t current_scene = mui_scene_dispatcher_current_scene(app->p_scene_dispatcher);
+    mui_view_t *p_active_view = app->p_view_dispatcher->p_active_view;
+
+    if (p_active_view == mui_list_view_get_view(app->p_list_view) && mui_list_view_back(app->p_list_view)) {
+        return;
+    }
+
+    if (current_scene == PLAYER_SCENE_FILE_BROWSER) {
+        mini_app_launcher_kill(mini_app_launcher(), MINI_APP_ID_PLAYER);
+    } else {
+        mui_scene_dispatcher_previous_scene(app->p_scene_dispatcher);
+    }
+}
+
 void app_player_on_run(mini_app_inst_t *p_app_inst) {
 
     app_player_t *p_app_handle = mui_mem_malloc(sizeof(app_player_t));
@@ -54,7 +69,16 @@ void app_player_on_kill(mini_app_inst_t *p_app_inst) {
     p_app_inst->p_handle = NULL;
 }
 
-void app_player_on_event(mini_app_inst_t *p_app_inst, mini_app_event_t *p_event) {}
+void app_player_on_event(mini_app_inst_t *p_app_inst, mini_app_event_t *p_event) {
+    app_player_t *app = p_app_inst->p_handle;
+    if (app == NULL) {
+        return;
+    }
+
+    if (p_event->id == MINI_APP_EVENT_BACK) {
+        app_player_back(app);
+    }
+}
 
 mini_app_t app_player_info = {.id = MINI_APP_ID_PLAYER,
                                  .name = "动画播放器",

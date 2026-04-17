@@ -1,6 +1,7 @@
 #include "mui_core.h"
 
 #include "mui_anim.h"
+#include "mini_app_launcher.h"
 #include "mui_u8g2.h"
 #include "nrf_log.h"
 #include "settings.h"
@@ -99,6 +100,18 @@ static void mui_process_input(mui_t *p_mui, mui_event_t *p_event) {
 
         input_event.key = arg & 0xFF;
         input_event.type = (arg >> 8) & 0xFF;
+
+        if (input_event.key == INPUT_KEY_BACK && input_event.type == INPUT_TYPE_SHORT) {
+            mini_app_launcher_t *p_launcher = mini_app_launcher();
+            if (p_launcher->p_main_app_inst) {
+                mini_app_event_t event = {.id = MINI_APP_EVENT_BACK};
+                mini_app_launcher_post_event(p_launcher, p_launcher->p_main_app_inst->p_app->id, &event);
+                if (p_mui->auto_update) {
+                    mui_update(mui());
+                }
+            }
+            return;
+        }
 
         p_view_port->input_cb(p_view_port, &input_event);
 

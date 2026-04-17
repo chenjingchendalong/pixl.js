@@ -1,4 +1,5 @@
 #include "mui_list_view.h"
+#include "mui_icons.h"
 #include "nrf_log.h"
 #include "settings.h"
 
@@ -248,6 +249,25 @@ static void mui_list_view_on_input(mui_view_t *p_view, mui_input_event_t *event)
             break;
         }
     }
+}
+
+bool mui_list_view_back(mui_list_view_t *p_view) {
+    if (p_view->selected_cb == NULL) {
+        return false;
+    }
+
+    uint16_t preferred_icons[] = {ICON_BACK, ICON_EXIT, ICON_HOME};
+    for (uint32_t i = 0; i < sizeof(preferred_icons) / sizeof(preferred_icons[0]); i++) {
+        for (uint32_t idx = 0; idx < mui_list_item_array_size(p_view->items); idx++) {
+            mui_list_item_t *p_item = mui_list_item_array_get(p_view->items, idx);
+            if (p_item && p_item->icon == preferred_icons[i]) {
+                p_view->selected_cb(MUI_LIST_VIEW_EVENT_SELECTED, p_view, p_item);
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 static void mui_list_view_on_enter(mui_view_t *p_view) {

@@ -73,6 +73,21 @@ void mini_app_launcher_exit(mini_app_launcher_t* p_launcher){
     mini_app_launcher_kill(p_launcher, p_launcher->p_main_app_inst->p_app->id);
 }
 
+void mini_app_launcher_post_event(mini_app_launcher_t *p_launcher, uint32_t id, mini_app_event_t *p_event) {
+    mini_app_inst_t *p_app_inst = *mui_app_inst_dict_get(p_launcher->app_inst_dict, id);
+    if (p_app_inst && p_app_inst->p_app->on_event_cb) {
+        p_app_inst->p_app->on_event_cb(p_app_inst, p_event);
+    }
+}
+
+void *mini_app_launcher_get_app_handle(mini_app_launcher_t *p_launcher, uint32_t id) {
+    mini_app_inst_t *p_app_inst = *mui_app_inst_dict_get(p_launcher->app_inst_dict, id);
+    if (p_app_inst) {
+        return p_app_inst->p_handle;
+    }
+    return NULL;
+}
+
 void mini_app_launcher_init(mini_app_launcher_t *p_launcher, uint32_t wakeup_reason) {
 
     mui_app_inst_dict_init(p_launcher->app_inst_dict);
