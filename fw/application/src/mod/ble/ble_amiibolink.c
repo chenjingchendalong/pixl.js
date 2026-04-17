@@ -230,7 +230,7 @@ void ble_amiibolink_received_data_v2(const uint8_t *data, size_t length) {
     //NRF_LOG_HEXDUMP_INFO(data, length);
 
     if (length < 16) {
-        NEW_BUFFER_READ(buffer, data, length);
+        NEW_BUFFER_READ(buffer, (void *)data, length);
         NRF_LOG_WARNING("data length is too short, v1 protocol ?");
         ble_amiibolink_process_cmd(&buffer);
         return;
@@ -270,8 +270,8 @@ void ble_amiibolink_received_data_v2(const uint8_t *data, size_t length) {
     NRF_LOG_INFO("decrypted data len: de_data_len=%d, decrypted_len=%d", link_data->de_data_len, out_len);
     NRF_LOG_INFO("nrf_crypto_aes_decrypt: %d %s", err, nrf_crypto_error_string_get(err));
 
-    NRF_LOG_HEXDUMP_DEBUG(&buf, data_len);
-    NEW_BUFFER_READ(buffer, (void *)&buf, data_len);
+    NRF_LOG_HEXDUMP_DEBUG(buf, data_len);
+    NEW_BUFFER_READ(buffer, buf, data_len);
     ble_amiibolink_process_cmd(&buffer);
 }
 

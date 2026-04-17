@@ -78,14 +78,12 @@ void mui_input_init() {
     nrf_gpio_cfg_input(BACK_BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
     m_back_button_raw_pressed = nrf_gpio_pin_read(BACK_BUTTON_PIN) == 0;
     m_back_button_stable_pressed = m_back_button_raw_pressed;
-    app_timer_cnt_get(&m_back_button_last_change_ticks);
+    m_back_button_last_change_ticks = app_timer_cnt_get();
 }
 
 void mui_input_tick() {
-    uint32_t now_ticks;
+    uint32_t now_ticks = app_timer_cnt_get();
     bool pressed = nrf_gpio_pin_read(BACK_BUTTON_PIN) == 0;
-
-    app_timer_cnt_get(&now_ticks);
 
     if (pressed != m_back_button_raw_pressed) {
         m_back_button_raw_pressed = pressed;

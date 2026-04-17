@@ -241,7 +241,7 @@ static void nus_data_handler(ble_nus_evt_t *p_evt) {
         if (m_nus_rx_data_handler) {
             // app_sched_event_put(p_evt->params.rx_data.p_data, p_evt->params.rx_data.length,
             //                    nus_event_async_call_rx_data);
-            nus_event_async_call_rx_data(p_evt->params.rx_data.p_data, p_evt->params.rx_data.length);
+            nus_event_async_call_rx_data((void *)p_evt->params.rx_data.p_data, p_evt->params.rx_data.length);
         }
 
     } else if (p_evt->type == BLE_NUS_EVT_TX_RDY) {
