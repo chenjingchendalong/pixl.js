@@ -11,9 +11,12 @@
 
 #define BACK_BUTTON_DEBOUNCE_MS 30
 
-static bool m_back_button_raw_pressed = false;
-static bool m_back_button_stable_pressed = false;
-static uint32_t m_back_button_last_change_ticks = 0;
+static const uint8_t m_back_button_pins[BACK_BUTTON_CANDIDATE_PINS_COUNT] = BACK_BUTTON_CANDIDATE_PINS;
+static bool m_back_button_raw_pressed[BACK_BUTTON_CANDIDATE_PINS_COUNT] = {0};
+static bool m_back_button_stable_pressed[BACK_BUTTON_CANDIDATE_PINS_COUNT] = {0};
+static uint32_t m_back_button_last_change_ticks[BACK_BUTTON_CANDIDATE_PINS_COUNT] = {0};
+
+static bool back_button_is_pressed(uint8_t pin) { return nrf_gpio_pin_read(pin) == BACK_BUTTON_ACTIVE_STATE; }
 
 static void mui_input_post_event(mui_input_event_t *p_input_event) {
     uint32_t arg = p_input_event->type;
@@ -74,36 +77,43 @@ void mui_input_on_bsp_btn_event(uint8_t btn, bsp_btn_event_t evt) {
 
 
 void mui_input_init() {
+    uint32_t now_ticks = app_timer_cnt_get();
+
     bsp_btn_init(mui_input_on_bsp_btn_event);
-    nrf_gpio_cfg_input(BACK_BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
-    m_back_button_raw_pressed = nrf_gpio_pin_read(BACK_BUTTON_PIN) == 0;
-    m_back_button_stable_pressed = m_back_button_raw_pressed;
-    m_back_button_last_change_ticks = app_timer_cnt_get();
+    for (uint32_t i = 0; i < BACK_BUTTON_CANDIDATE_PINS_COUNT; i++) {
+        nrf_gpio_cfg_input(m_back_button_pins[i], BACK_BUTTON_PULL);
+        m_back_button_raw_pressed[i] = back_button_is_pressed(m_back_button_pins[i]);
+        m_back_button_stable_pressed[i] = m_back_button_raw_pressed[i];
+        m_back_button_last_change_ticks[i] = now_ticks;
+    }
 }
 
 void mui_input_tick() {
     uint32_t now_ticks = app_timer_cnt_get();
-    bool pressed = nrf_gpio_pin_read(BACK_BUTTON_PIN) == 0;
+    for (uint32_t i = 0; i < BACK_BUTTON_CANDIDATE_PINS_COUNT; i++) {
+        bool pressed = back_button_is_pressed(m_back_button_pins[i]);
 
-    if (pressed != m_back_button_raw_pressed) {
-        m_back_button_raw_pressed = pressed;
-        m_back_button_last_change_ticks = now_ticks;
-    }
+        if (pressed != m_back_button_raw_pressed[i]) {
+            m_back_button_raw_pressed[i] = pressed;
+            m_back_button_last_change_ticks[i] = now_ticks;
+        }
 
-    if (pressed != m_back_button_stable_pressed &&
-        app_timer_cnt_diff_compute(now_ticks, m_back_button_last_change_ticks) >= APP_TIMER_TICKS(BACK_BUTTON_DEBOUNCE_MS)) {
-        m_back_button_stable_pressed = pressed;
+        if (pressed != m_back_button_stable_pressed[i] &&
+            app_timer_cnt_diff_compute(now_ticks, m_back_button_last_change_ticks[i]) >=
+                APP_TIMER_TICKS(BACK_BUTTON_DEBOUNCE_MS)) {
+            m_back_button_stable_pressed[i] = pressed;
 
-        if (pressed) {
-            NRF_LOG_DEBUG("Back key pressed");
-            mui_input_event_t input_event = {.key = INPUT_KEY_BACK, .type = INPUT_TYPE_PRESS};
-            mui_input_post_event(&input_event);
-        } else {
-            NRF_LOG_DEBUG("Back key released");
-            mui_input_event_t release_event = {.key = INPUT_KEY_BACK, .type = INPUT_TYPE_RELEASE};
-            mui_input_event_t short_event = {.key = INPUT_KEY_BACK, .type = INPUT_TYPE_SHORT};
-            mui_input_post_event(&release_event);
-            mui_input_post_event(&short_event);
+            if (pressed) {
+                NRF_LOG_DEBUG("Back key candidate pin %d pressed", m_back_button_pins[i]);
+                mui_input_event_t input_event = {.key = INPUT_KEY_BACK, .type = INPUT_TYPE_PRESS};
+                mui_input_post_event(&input_event);
+            } else {
+                NRF_LOG_DEBUG("Back key candidate pin %d released", m_back_button_pins[i]);
+                mui_input_event_t release_event = {.key = INPUT_KEY_BACK, .type = INPUT_TYPE_RELEASE};
+                mui_input_event_t short_event = {.key = INPUT_KEY_BACK, .type = INPUT_TYPE_SHORT};
+                mui_input_post_event(&release_event);
+                mui_input_post_event(&short_event);
+            }
         }
     }
 }
