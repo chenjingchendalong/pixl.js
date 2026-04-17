@@ -183,7 +183,10 @@ void mui_deinit(mui_t *p_mui) {
 
 void mui_post(mui_t *p_mui, mui_event_t *p_event) { mui_event_post(&p_mui->event_queue, p_event); }
 
-void mui_tick(mui_t *p_mui) { mui_event_dispatch(&p_mui->event_queue); }
+void mui_tick(mui_t *p_mui) {
+    mui_input_tick();
+    mui_event_dispatch(&p_mui->event_queue);
+}
 
 void mui_panic(mui_t *p_mui, char *err) {
     if (p_mui->initialized) {

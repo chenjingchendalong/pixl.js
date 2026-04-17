@@ -16,24 +16,24 @@
 #define BSP_LED_0      LED_1
 
 
-#define BUTTONS_NUMBER 4
+#define BUTTONS_NUMBER 3
 
 #define BUTTON_START   5
 #define BUTTON_1       5
 #define BUTTON_2       6
 #define BUTTON_3       7
-#define BUTTON_4       8
-#define BUTTON_STOP    8
+#define BUTTON_STOP    7
 #define BUTTON_PULL    NRF_GPIO_PIN_PULLUP
 
 #define BUTTONS_ACTIVE_STATE 0
 
-#define BUTTONS_LIST { BUTTON_1, BUTTON_2, BUTTON_3, BUTTON_4}
+#define BUTTONS_LIST { BUTTON_1, BUTTON_2, BUTTON_3}
 
 #define BSP_BUTTON_0   BUTTON_1
 #define BSP_BUTTON_1   BUTTON_2
 #define BSP_BUTTON_2   BUTTON_3
-#define BSP_BUTTON_3   BUTTON_4
+
+#define BACK_BUTTON_PIN 8
 
 
 // display config
