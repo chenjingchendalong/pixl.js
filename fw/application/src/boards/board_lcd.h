@@ -33,7 +33,7 @@
 #define BSP_BUTTON_1   BUTTON_2
 #define BSP_BUTTON_2   BUTTON_3
 
-#define BACK_BUTTON_PIN 8
+#define BACK_BUTTON_PIN 4
 
 
 // display config
