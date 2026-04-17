@@ -7,6 +7,7 @@
 #include "nrf_drv_gpiote.h"
 #include "nrf_gpio.h"
 #include "nrf_log.h"
+#include "nrf_pwr_mgmt.h"
 
 #include "cache.h"
 
@@ -15,8 +16,25 @@
 static const uint8_t m_back_button_pins[BACK_BUTTON_CANDIDATE_PINS_COUNT] = BACK_BUTTON_CANDIDATE_PINS;
 static bool m_back_button_stable_pressed[BACK_BUTTON_CANDIDATE_PINS_COUNT] = {0};
 static uint32_t m_back_button_last_event_ticks[BACK_BUTTON_CANDIDATE_PINS_COUNT] = {0};
+static bool m_back_debug_valid = false;
+static uint8_t m_back_debug_pin = 0;
+static bool m_back_debug_pressed = false;
+static uint32_t m_back_debug_ticks = 0;
 
 static bool back_button_is_pressed(uint8_t pin) { return nrf_gpio_pin_read(pin) == BACK_BUTTON_ACTIVE_STATE; }
+
+bool mui_input_get_back_debug_text(char *text, size_t text_size) {
+    if (!m_back_debug_valid || text == NULL || text_size == 0) {
+        return false;
+    }
+
+    if (app_timer_cnt_diff_compute(app_timer_cnt_get(), m_back_debug_ticks) > APP_TIMER_TICKS(3000)) {
+        return false;
+    }
+
+    snprintf(text, text_size, "BK P%02d %s", m_back_debug_pin, m_back_debug_pressed ? "DN" : "UP");
+    return true;
+}
 
 static int32_t back_button_find_pin_index(uint8_t pin) {
     for (uint32_t i = 0; i < BACK_BUTTON_CANDIDATE_PINS_COUNT; i++) {
@@ -56,6 +74,10 @@ static void back_button_gpiote_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_pola
     }
 
     m_back_button_stable_pressed[idx] = pressed;
+    m_back_debug_valid = true;
+    m_back_debug_pin = (uint8_t)pin;
+    m_back_debug_pressed = pressed;
+    m_back_debug_ticks = now_ticks;
     nrf_pwr_mgmt_feed();
 
     if (pressed) {

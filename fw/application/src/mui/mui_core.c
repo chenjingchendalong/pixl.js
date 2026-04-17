@@ -39,8 +39,23 @@ static void mui_draw_mem_mon(mui_canvas_t *p_canvas) {
     }
 }
 
+static void mui_draw_back_debug(mui_canvas_t *p_canvas) {
+    char debug[24];
+    if (mui_input_get_back_debug_text(debug, sizeof(debug))) {
+        uint8_t w = (uint8_t)mui_canvas_get_utf8_width(p_canvas, debug) + 4;
+        uint8_t y = mui_canvas_get_height(p_canvas);
+
+        mui_canvas_set_font(p_canvas, u8g2_font_wqy12_t_gb2312a);
+        mui_canvas_set_draw_color(p_canvas, 0);
+        mui_canvas_draw_box(p_canvas, 0, y - 10, w, 12);
+        mui_canvas_set_draw_color(p_canvas, 1);
+        mui_canvas_draw_utf8(p_canvas, 2, y, debug);
+    }
+}
+
 static void mui_buffer_flush(mui_t *p_mui) {
     mui_canvas_set_frame(&p_mui->canvas, 0, 0, p_mui->screen_width, p_mui->screen_height);
+    mui_draw_back_debug(&p_mui->canvas);
     mui_draw_mem_mon(&p_mui->canvas);
     mui_canvas_flush(&p_mui->canvas);
 }

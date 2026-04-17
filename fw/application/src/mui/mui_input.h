@@ -30,6 +30,7 @@ typedef struct {
 
 void mui_input_init();
 void mui_input_tick();
+bool mui_input_get_back_debug_text(char *text, size_t text_size);
 
 void mui_input_on_bsp_event(bsp_event_t evt);
 
